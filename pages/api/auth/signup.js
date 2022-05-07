@@ -18,10 +18,16 @@ async function handler(req, res) {
   const db = client.db();
 
   const hashedPassord = await hashPassword(password);
-  const result = await db.collection('users').insertOne({
-    email: email,
-    password: hashedPassord,
-  });
+  try {
+    const result = await db.collection('users').insertOne({
+      email: email,
+      password: hashedPassord,
+    });
+  } catch (error) {
+    res.json({ message: 'Error in creating a new user', error: error });
+    return;
+  }
+  res.status(201).json({ message: 'Created new user' });
 }
 
 export default handler;
