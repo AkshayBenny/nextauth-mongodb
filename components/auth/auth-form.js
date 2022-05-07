@@ -1,10 +1,45 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+
+async function createUser(email, password) {
+  const response = await fetch('/api/auth/signup', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || 'Something wen wrong');
+  }
+  return data;
+}
 
 function AuthForm() {
+  const emailInputRef = useRef();
+  const passwordInputRef = useRef();
   const [isLogin, setIsLogin] = useState(true);
 
-  function switchAuthModeHandler() {
+  function switchAuthModeHandler(e) {
     setIsLogin((prevState) => !prevState);
+  }
+
+  async function submitHandler(e) {
+    e.preventDefault();
+    const enteredEmail = emailInputRef.current.value;
+    const enteredPassword = passwordInputRef.current.value;
+    if (isLogin) {
+      //log user in
+    } else {
+      //add new user
+      try {
+        const result = await createUser(enteredEmail, enteredPassword);
+        console.log(result);
+      } catch (error) {
+        console.log(error);
+      }
+    }
   }
 
   return (
@@ -13,13 +48,17 @@ function AuthForm() {
         {isLogin ? 'Login' : 'Sign Up'}
       </h1>
       <div className='flex justify-center items-center'>
-        <form className='border space-y-4 rounded px-12 py-6'>
+        <form
+          onSubmit={submitHandler}
+          className='border space-y-4 rounded px-12 py-6'
+        >
           <div className='flex flex-col'>
             <input
               className='border rounded px-4 py-2'
               placeholder='Email'
               type='email'
               id='email'
+              ref={emailInputRef}
               required
             />
           </div>
@@ -29,6 +68,7 @@ function AuthForm() {
               placeholder='Password'
               type='password'
               id='password'
+              ref={passwordInputRef}
               required
             />
           </div>
